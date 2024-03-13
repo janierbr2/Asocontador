@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de datos ASOCONTADOR</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/3.0.0/mqtt.min.js"></script>
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css" crossorigin="anonymous">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anta&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #dfeff7;
+            background-color: #dfeff7;
+            font-family: 'Poppins', sans-serif;
+            color: #6f7279;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: linear-gradient(to bottom, #fffefc, #e4f6fb);
+            max-width: 1000px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px #b5dde9;
+            position: relative;
+        }
+
+        .card {
+            background-color: #fffefc !important;
+            font-family: 'Anta', sans-serif;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 8px #ceebff;
+        }
+
+        h1,
+        h2 {
+            color: #6f8fff;
+        }
+
+        .btn-color {
+            background-color: #6f8fff;
+        }
+
+        .card-text {
+            font-style: bold;
+            color: #6f8fff;
+        }
+
+        .logo {
+            max-width: 30%;
+            margin: 20px auto 0;
+            display: block;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .sm {
+                width: 200px;
+            }
+
+            .display-4 {
+                font-size: 2.5rem;
+            }
+
+            b {
+                color: #6f8fff;
+                font-size: 3em;
+            }
+        }
+    </style>
+
+</head>
+
+<body class="bg-color">
+    <div class="container mt-2">
+        <div class="text-center mt-3">
+            <h2 style="font-size: 2.5em;">Monitor</h2>
+            <h1 style="font-size: 3em; font-weight: bold;">ASOCONTADOR</h1>
+        </div>
+
+
+        <div class="row row-cols-1 row-cols-lg-2 g-0 overflow-hidden">
+
+            <div class="col">
+                <div class="lc-block">
+
+                    <div
+                        class="row row-cols-1 row-cols-md-2 justify-content-center row-cols-lg-3 py-4 g-4 counter-RANDOMID">
+                        <div class="col">
+                            <!-- Card pH -->
+                            <div class="card mb-3 text-center bg-light">
+                                <div class="card-body">
+                                    <b class="card-text display-4" id="valorPH"></b>
+                                    <span class="unit">UND</span>
+                                    <h5 class="card-title">pH</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <!-- Card Turbidez -->
+                            <div class="card mb-3 text-center bg-light">
+                                <div class="card-body">
+                                    <b class="card-text display-4" id="valorTurbidez"></b>
+                                    <span class="unit">UNT</span>
+                                    <h5 class="card-title">Turbidez</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <!-- Card Cloro -->
+                            <div class="card mb-3 text-center bg-light">
+                                <div class="card-body">
+                                    <b class="card-text display-4" id="valorCloro"></b>
+                                    <span class="unit">%</span>
+                                    <h5 class="card-title">Cloro</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-color text-white mt-3 mx-auto" onclick="validarYEnviar()">
+                        <i class="fas fa-paper-plane"></i>
+                        Enviar datos
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="col-md-12 navbar-expand">
+            <img class="logo mt-5" src="tecnoparque.png" alt="Tecnoparque Logo" width="150">
+        </div>
+
+    </div>
+
+
+
+    <!-- Modal de Bootstrap para mostrar mensajes de validación -->
+    <div class="modal" id="validationModal" tabindex="-1" role="dialog" aria-labelledby="validationModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="validationModalLabel">Validación de datos</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3em;"></i>
+                    <p id="validationMessage">No hay datos para enviar.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const brokerUrl = 'wss://broker.hivemq.com:8884/mqtt';
+        const topic = 'Asocontador/MonitorPrincipal';
+
+        const client = mqtt.connect(brokerUrl);
+
+        let lastData = {};
+
+        client.on('connect', function () {
+            console.log('Conectado al broker MQTT');
+            client.subscribe(topic);
+        });
+
+        client.on('message', function (receivedTopic, message) {
+            try {
+                const data = JSON.parse(message.toString());
+                console.log('Mensaje recibido en el tema', receivedTopic, data);
+
+                // Actualiza la interfaz de usuario con los valores recibidos
+                updateUI(data);
+            } catch (error) {
+                console.error('Error al procesar el mensaje:', error);
+            }
+        });
+
+        client.on('error', function (error) {
+            console.error('Error en la conexión MQTT:', error);
+        });
+
+        function updateUI(data) {
+            lastData = data; // Actualiza lastData con los datos más recientes
+            const valorPH = data.pH ? data.pH.toFixed(2) : 'N/A';
+            const valorTurbidez = data.Turbidity ? data.Turbidity.toFixed(2) : 'N/A';
+            const valorCloro = data.Chlorine || 'N/A';
+
+            // Actualiza los valores en las tarjetas
+            document.getElementById('valorPH').innerText = `${valorPH}`;
+            document.getElementById('valorTurbidez').innerText = `${valorTurbidez}`;
+            document.getElementById('valorCloro').innerText = valorCloro;
+        }
+
+        function validarYEnviar() {
+            // Verifica si los campos están vacíos
+            const valorPH = document.getElementById('valorPH').innerText.trim();
+            const valorTurbidez = document.getElementById('valorTurbidez').innerText.trim();
+            const valorCloro = document.getElementById('valorCloro').innerText.trim();
+
+            if (valorPH === '' || valorTurbidez === '' || valorCloro === '') {
+                // Al menos uno de los campos está vacío, muestra el modal de validación
+                $('#validationModal').modal('show');
+            } else {
+                // Todos los campos están llenos, procede a enviar los datos
+                enviarDatos();
+            }
+        }
+
+        function enviarDatos() {
+            const valorPH = lastData.pH ? lastData.pH.toFixed(2) : 'N/A';
+            const valorTurbidez = lastData.Turbidity ? lastData.Turbidity.toFixed(2) : 'N/A';
+            const valorCloro = lastData.Chlorine || 'N/A';
+
+            console.log('Datos enviados a Google Apps Script:', valorPH, valorTurbidez, valorCloro);
+
+            // Llama a la función en tu script de Google Apps Script enviando todos los datos
+            google.script.run.enviarDatosAScript(valorPH, valorTurbidez, valorCloro);
+        }
+
+    </script>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+
+</html>

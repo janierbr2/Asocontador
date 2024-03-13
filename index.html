@@ -11,71 +11,150 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/3.0.0/mqtt.min.js"></script>
 
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css" crossorigin="anonymous">
+
   <style>
     @media only screen and (max-width: 600px) {
       .sm {
         width: 200px;
       }
+
+      .display-4 {
+        font-size: 2.5rem;
+      }
+    }
+
+    body {
+      background-color: #edf3ff;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .card {
+      background-color: #6f8fff !important;
+      color: #fff;
+      border-radius: 20px;
+      border: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    h3,
+    h4 {
+      color: #6f8fff;
+    }
+
+    .btn-color {
+      background-color: #6f8fff;
+    }
+
+    .b {
+      font-style: bold;
+    }
+
+    .footer {
+      text-align: center;
+      color: white;
     }
   </style>
 
 </head>
 
-<body class="bg-light">
-  <div class="container mt-3">
-    <h3 class="text-center mt-5 mb-5">Monitor de datos ASOCONTADOR</h3>
-
-    <div class="row">
-      <div class="col-md-6 mb-3 sm">
-        <div class="card text-center bg-light">
-          <div class="card-body">
-            <h5 class="card-title">pH</h5>
-            <p class="card-text" id="valorPH"></p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6 mb-3 sm">
-        <div class="card text-center bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Turbidez</h5>
-            <p class="card-text" id="valorTurbidez"></p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-12 mb-3">
-        <div class="card text-center bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Cloro</h5>
-            <p class="card-text" id="valorCloro"></p>
-          </div>
-        </div>
-      </div>
+<body class="bg-color">
+  <div class="container mt-2">
+    <div class="text-center mt-3">
+      <h4 style="font-size: 1.5em;">Monitor</h4>
+      <h3 style="font-size: 2em; font-weight: bold;">ASOCONTADOR</h3>
     </div>
 
-    <div class="row">
-      <div class="col-md-6 mb-3 sm">
-        <div class="form-group">
-          <label for="cloruroGaseoso">Cloruro Gaseoso</label>
-          <input type="number" class="form-control" id="cloruroGaseoso" placeholder="(litros)">
-          <div class="invalid-feedback">Por favor, completa este campo.</div>
+
+    <div class="row row-cols-1 row-cols-lg-2 g-0 overflow-hidden">
+
+      <div class="col">
+        <div class="lc-block">
+
+          <div class="row row-cols-1 row-cols-md-2 justify-content-center row-cols-lg-3 py-4 g-4 counter-RANDOMID">
+            <div class="col">
+              <!-- Card pH -->
+              <div class="card mb-3 text-center bg-light">
+                <div class="card-body">
+                  <b class="card-text display-4" id="valorPH"></b>
+                  <span class="unit">UND</span>
+                  <h5 class="card-title">pH</h5>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <!-- Card Turbidez -->
+              <div class="card mb-3 text-center bg-light">
+                <div class="card-body">
+                  <b class="card-text display-4" id="valorTurbidez"></b>
+                  <span class="unit">UNT</span>
+                  <h5 class="card-title">Turbidez</h5>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <!-- Card Cloro -->
+              <div class="card mb-3 text-center bg-light">
+                <div class="card-body">
+                  <b class="card-text display-4" id="valorCloro"></b>
+                  <span class="unit">%</span>
+                  <h5 class="card-title">Cloro</h5>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="col-md-6 mb-3 sm text-center">
-        <div class="form-group">
-          <label for="cloruroAluminio">Cloruro de Aluminio</label>
-          <input type="number" class="form-control" id="cloruroAluminio" placeholder="(litros)">
-          <div class="invalid-feedback">Por favor, completa este campo.</div>
+      <div class="col d-flex flex-column justify-content-center align-items-center">
+        <div class="card pr-3 pl-3">
+          <div class="lc-block">
+            <div class="row row-cols-1 row-cols-md-2 justify-content-center row-cols-lg-3 py-4 g-4 counter-RANDOMID">
+              <div class="col text-center">
+                <div class="form-group">
+                  <label for="cloruroGaseoso">Cloruro Gaseoso</label>
+                  <input type="number" class="form-control" id="cloruroGaseoso" placeholder="(litros)">
+                  <div class="invalid-feedback">Por favor, completa este campo.</div>
+                </div>
+              </div>
+
+              <div class="col text-center">
+                <div class="form-group">
+                  <label for="cloruroAluminio">Cloruro de Aluminio</label>
+                  <input type="number" class="form-control" id="cloruroAluminio" placeholder="(litros)">
+                  <div class="invalid-feedback">Por favor, completa este campo.</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+
+        <button class="btn btn-success text-white mt-3" onclick="validarYEnviar()">
+          <i class="fas fa-paper-plane"></i>
+          Enviar
+        </button>
+          
       </div>
+
     </div>
 
-    <button class="btn btn-success btn-block" onclick="validarYEnviar()">Enviar Datos</button>
 
-    <p class="text-center mt-3">Tecnoparque Pitalito</p>
   </div>
+
+  <!-- Footer -->
+  <div class="container text-center">
+    <div class="col-md-12 navbar-expand">
+      <img src="https://redtecnoparque.com/wp-content/uploads/2023/07/LOGOS-NODOS-2-02.png" alt="Tecnoparque Logo"
+        style="max-width: 70%;">
+    </div>
+  </div>
+
+
+
+
 
   <!-- Modal de Bootstrap para mostrar mensajes de validación -->
   <div class="modal" id="validationModal" tabindex="-1" role="dialog" aria-labelledby="validationModalLabel"
@@ -134,8 +213,8 @@
       const valorCloro = data.Chlorine || 'N/A';
 
       // Actualiza los valores en las tarjetas
-      document.getElementById('valorPH').innerText = `${valorPH} UND`;
-      document.getElementById('valorTurbidez').innerText = `${valorTurbidez} UNT`;
+      document.getElementById('valorPH').innerText = `${valorPH}`;
+      document.getElementById('valorTurbidez').innerText = `${valorTurbidez}`;
       document.getElementById('valorCloro').innerText = valorCloro;
     }
 
